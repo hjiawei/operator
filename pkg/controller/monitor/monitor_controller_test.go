@@ -36,6 +36,7 @@ import (
 	"github.com/tigera/operator/pkg/apis"
 	"github.com/tigera/operator/pkg/common"
 	"github.com/tigera/operator/pkg/controller/status"
+	"github.com/tigera/operator/pkg/controller/utils"
 	"github.com/tigera/operator/pkg/render"
 )
 
@@ -70,10 +71,11 @@ var _ = Describe("Monitor controller tests", func() {
 
 		// Create an object we can use throughout the test to do the monitor reconcile loops.
 		r = ReconcileMonitor{
-			client:   cli,
-			scheme:   scheme,
-			provider: operatorv1.ProviderNone,
-			status:   mockStatus,
+			client:          cli,
+			scheme:          scheme,
+			provider:        operatorv1.ProviderNone,
+			status:          mockStatus,
+			prometheusReady: &utils.ReadyFlag{},
 		}
 
 		// We start off with a 'standard' installation, with nothing special
@@ -96,6 +98,9 @@ var _ = Describe("Monitor controller tests", func() {
 			TypeMeta:   metav1.TypeMeta{Kind: "Monitor", APIVersion: "operator.tigera.io/v1"},
 			ObjectMeta: metav1.ObjectMeta{Name: "tigera-secure"},
 		})).NotTo(HaveOccurred())
+
+		// mark that the watch for prometheus resources was successful
+		r.prometheusReady.MarkAsReady()
 	})
 
 	Context("controller reconciliation", func() {
